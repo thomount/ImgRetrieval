@@ -78,11 +78,4 @@ if __name__ == "__main__":
 		Of.close()
 
 
-
-	
-
-	#for i in range()
-	#print(dic16)
-	#for i in range(df16.shape[0]):
-		
 	
