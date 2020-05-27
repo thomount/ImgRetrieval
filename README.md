@@ -1,5 +1,7 @@
 # 使用方法
 
+首先将图片集合DataSet放在 /data/ 目录下，将Allimages.txt和QueryImages.txt放在 /input/ 目录下。
+
 	pip install -r requirements.txt
 	cd src
 	python main.py [-a/-q] [-L2/-HI/-Bh/-CE] -v=[16/128/160/192/256/320/512/1024] [-l=128 -a=<alpha>]
