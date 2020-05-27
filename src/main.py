@@ -10,26 +10,33 @@ def getQuery(path, pp):
 			ret.append(pp+line.split()[0])
 	return ret
 
-def dis(a, b, t):
-	if t == 0:
-		return sum((a-b) ** 2)
-	if t == 1:
-		return -sum(np.minimum(a,b))
-	if t == 2:
-		return -sum((a*b)**0.5)
-	if t == 3:
-		return -sum(a*np.log(b+0.1))
+
+def dis(a, b, t, Len, alpha):
+	if Len == None:
+		if t == 0:
+			return sum((a-b) ** 2)
+		if t == 1:
+			return -sum(np.minimum(a,b))
+		if t == 2:
+			return -sum((a*b)**0.5)
+		if t == 3:
+			return -sum(a*np.log(b+0.1))
+	else:
+		return alpha*dis(a[:Len], b[:Len], t, None, None)+dis(a[Len:], b[Len:], t, None, None)
+
 if __name__ == "__main__":
 	argv = sys.argv
-	config = [16, 0, '../input/QueryImages.txt', 0]
-	if '-v=16' in argv:
-		config[0] = 16
-	if '-v=128' in argv:
-		config[0] = 128
-	if '-v=256' in argv:
-		config[0] = 256
-	if '-v=1024' in argv:
-		config[0] = 1024
+	config = [16, 0, '../input/QueryImages.txt', 0, None, None]
+	for s in argv:
+		if s[:3] == '-v=':
+			config[0] = int(s[3:])
+		if s[:3] == '-l=':
+			config[4] = int(s[3:])
+			config[5] = 1
+		if s[:3] == '-a=':
+			config[5] = eval(s[3:].replace('_', '.'))
+			print(config[5])
+			
 	if '-q' in argv:
 		config[2] = '../input/QueryImages.txt'
 		config[3] = 0
@@ -61,14 +68,14 @@ if __name__ == "__main__":
 		avc = []
 	for query in Queries:
 		tar = dic[query]
-		lis.sort(key=lambda x: dis(tar, x[1], config[1]))
+		lis.sort(key=lambda x: dis(tar, x[1], config[1], config[4], config[5]))
 		if config[3] == 0:
 			parts = query.split('/')
 			name = '../output/quereis/res_'+parts[-2]+'_'+parts[-1][:-4]+'.txt'
 			#print(parts[-2]+'_'+parts[-1][:-4])
 			outf = open(name, 'w')
 			for i in range(1,31):
-				print(lis[i][0][16:], '\t', dis(tar, lis[i][1], config[1]), file = outf)
+				print(lis[i][0][16:], '\t', dis(tar, lis[i][1], config[1], config[4], config[5]), file = outf)
 			outf.close()
 		else:
 			parts = query.split('/')
