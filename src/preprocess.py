@@ -15,16 +15,21 @@ def getfiles(path):
 	return ret
 
 
-def pre(ipath, opath1, opath2):
+def pre(ipath, opath1, size, flag=False):
 	files = getfiles(ipath)
-	img = cv2.imread(files[0])
-	#print(numpy.reshape(img, (img.shape[0]*img.shape[1], 3)))
-	#cv2.imshow("test", img)
-	#cv2.waitKey(0)
-	df16 = pd.DataFrame()
-	df128 = pd.DataFrame()
+	df = pd.DataFrame()
 	tot, t = len(files), 0
-	
+
+	size1 = size >> 1
+	pw = 0
+	while size1 > 1:
+		pw += 1
+		size1 >>= 3
+	div1 = 256 >> pw
+	tm = [1<<(2*pw+1), 1<<(pw)]
+	print(div1)
+	if flag:
+		size <<= 1
 	for file in files:
 		t += 1
 		if t % 10 == 0:
@@ -32,30 +37,26 @@ def pre(ipath, opath1, opath2):
 		img = cv2.imread(file)
 		n, m = img.shape[0], img.shape[1]
 		img = pd.DataFrame(numpy.reshape(img, (n*m, 3)))
-		img16 = img.copy()
-		img16.loc[:, 0] //=128;
-		img16.loc[:, 1] //=64;
-		img16.loc[:, 2] //=128;
-		img16.loc[:, 3] = img16.loc[:, 0]*8+img16.loc[:, 1]*2+img16.loc[:, 2];
-		#print(img16)
-		img128 = img.copy()
-		img128.loc[:, 0] //=64;
-		img128.loc[:, 1] //=32;
-		img128.loc[:, 2] //=64;
-		img128.loc[:, 3] = img128.loc[:, 0]*32+img128.loc[:, 1]*4+img128.loc[:, 2];
-		
-		pixelid16 = img16.loc[:, 3].values.reshape(n*m).tolist()
-		pixelid128 = img128.loc[:, 3].values.reshape(n*m).tolist()
-		#print(type(pixelid16), pixelid16.shape)
-		d16 = [pixelid16.count(i) for i in range(16)]
-		d128 = [pixelid128.count(i) for i in range(128)]
-		#print(d16)
-		#print(d128)
-		df16 = df16.append([[file, d16]])
-		df128 = df128.append([[file, d128]])
-	df16.to_csv(opath1)
-	df128.to_csv(opath2)
-
+		if flag:
+			img.loc[:, 3] = (img.loc[:, 0]+img.loc[:, 1]+img.loc[:, 2])//3
+			#print(img.loc[:, 3])
+			img.loc[:, 3] //= div1
+			#print(img.loc[:, 3])
+			img.loc[:, 3] *= (1<<(3*pw+1))
+		else:
+			img.loc[:, 3] = 0
+		img.loc[:, 0] //=div1
+		img.loc[:, 1] //=(div1>>1)
+		img.loc[:, 2] //=div1;
+		img.loc[:, 3] += img.loc[:, 0]*tm[0]+img.loc[:, 1]*tm[1]+img.loc[:, 2];
+		pixelid = img.loc[:, 3].values.reshape(n*m).tolist()
+		d = [pixelid.count(i) for i in range(size)]
+		df = df.append([[file, d]])
+	df.to_csv(opath1)
 
 if __name__ == "__main__":
-	pre('../data/DataSet', '../output/vec16.csv', '../output/vec128.csv')
+	#pre('../data/DataSet', '../output/vec16.csv', 16)
+	#pre('../data/DataSet', '../output/vec128.csv', 128)
+	pre('../data/DataSet', '../output/vec256.csv', 128, True)
+	#pre('../data/DataSet', '../output/vec1024.csv', 1024)
+	

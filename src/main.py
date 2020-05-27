@@ -17,6 +17,8 @@ def dis(a, b, t):
 		return -sum(np.minimum(a,b))
 	if t == 2:
 		return -sum((a*b)**0.5)
+	if t == 3:
+		return -sum(a*np.log(b+0.1))
 if __name__ == "__main__":
 	argv = sys.argv
 	config = [16, 0, '../input/QueryImages.txt', 0]
@@ -24,6 +26,10 @@ if __name__ == "__main__":
 		config[0] = 16
 	if '-v=128' in argv:
 		config[0] = 128
+	if '-v=256' in argv:
+		config[0] = 256
+	if '-v=1024' in argv:
+		config[0] = 1024
 	if '-q' in argv:
 		config[2] = '../input/QueryImages.txt'
 		config[3] = 0
@@ -36,7 +42,8 @@ if __name__ == "__main__":
 		config[1] = 1
 	if '-Bh' in argv:
 		config[1] = 2
-
+	if '-CE' in argv:
+		config[1] = 3
 	df = pd.read_csv('../output/vec'+str(config[0])+'.csv')
 
 	
